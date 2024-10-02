@@ -1,19 +1,17 @@
 package com.example;
 
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-import org.fife.ui.rtextarea.RTextScrollPane;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.print.PrinterException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 
 public class TextEditor {
-    private RSyntaxTextArea textArea;
+    private JTextArea textArea;
 
     public TextEditor() {
         JFrame frame = new JFrame("文本编辑器");
@@ -21,25 +19,28 @@ public class TextEditor {
         frame.setSize(800, 600);
         frame.setLayout(new BorderLayout());
 
-        textArea = new RSyntaxTextArea(20, 60);
-        textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA); // 默认语法高亮为 Java
-        RTextScrollPane sp = new RTextScrollPane(textArea);
-        frame.add(sp, BorderLayout.CENTER);
+        textArea = new JTextArea();
+        frame.add(new JScrollPane(textArea), BorderLayout.CENTER);
 
         // 创建菜单栏
         JMenuBar menuBar = new JMenuBar();
+
+        // 文件菜单
         JMenu fileMenu = new JMenu("文件");
         addFileMenuItems(fileMenu);
         menuBar.add(fileMenu);
 
+        // 搜索菜单
         JMenu searchMenu = new JMenu("搜索");
         addSearchMenuItems(searchMenu);
         menuBar.add(searchMenu);
 
+        // 查看菜单
         JMenu viewMenu = new JMenu("查看");
         addViewMenuItems(viewMenu);
         menuBar.add(viewMenu);
 
+        // 帮助菜单
         JMenu helpMenu = new JMenu("帮助");
         addHelpMenuItems(helpMenu);
         menuBar.add(helpMenu);
@@ -53,22 +54,27 @@ public class TextEditor {
     }
 
     private void addFileMenuItems(JMenu fileMenu) {
+        // 新建
         JMenuItem newItem = new JMenuItem("新建");
         newItem.addActionListener(e -> new TextEditor());
         fileMenu.add(newItem);
 
+        // 打开
         JMenuItem openItem = new JMenuItem("打开");
         openItem.addActionListener(this::openFile);
         fileMenu.add(openItem);
 
+        // 保存
         JMenuItem saveItem = new JMenuItem("保存");
         saveItem.addActionListener(this::saveFile);
         fileMenu.add(saveItem);
 
+        // 退出
         JMenuItem exitItem = new JMenuItem("退出");
         exitItem.addActionListener(e -> System.exit(0));
         fileMenu.add(exitItem);
 
+        // 打印
         JMenuItem printItem = new JMenuItem("打印");
         printItem.addActionListener(e -> printFile());
         fileMenu.add(printItem);
@@ -102,7 +108,6 @@ public class TextEditor {
             try {
                 String content = new String(Files.readAllBytes(file.toPath()));
                 textArea.setText(content);
-                setSyntaxStyle(file.getName());
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(null, "无法打开文件: " + ex.getMessage());
             }
@@ -128,7 +133,7 @@ public class TextEditor {
             if (!printed) {
                 JOptionPane.showMessageDialog(null, "打印取消");
             }
-        } catch (Exception e) {
+        } catch (PrinterException e) {
             JOptionPane.showMessageDialog(null, "打印失败: " + e.getMessage());
         }
     }
@@ -145,35 +150,6 @@ public class TextEditor {
                 JOptionPane.showMessageDialog(null, "未找到该单词");
             }
         }
-    }
-
-    private void setSyntaxStyle(String fileName) {
-        String fileExtension = getFileExtension(fileName);
-        switch (fileExtension) {
-            case "java":
-                textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JAVA);
-                break;
-            case "py":
-                textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_PYTHON);
-                break;
-            case "cpp":
-                textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_C);
-                break;
-            case "html":
-                textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_HTML);
-                break;
-            case "css":
-                textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_CSS);
-                break;
-            default:
-                textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_NONE);
-                break;
-        }
-    }
-
-    private String getFileExtension(String fileName) {
-        int lastIndex = fileName.lastIndexOf('.');
-        return (lastIndex == -1) ? "" : fileName.substring(lastIndex + 1);
     }
 
     public static void main(String[] args) {
